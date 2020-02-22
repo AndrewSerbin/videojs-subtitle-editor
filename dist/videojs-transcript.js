@@ -1,12 +1,7 @@
-/*! videojs-transcript - v0.8.1 - 2017-04-21
-* Copyright (c) 2017 Matthew Walsh; Licensed MIT */
 (function (window, videojs) {
   'use strict';
 
 
-// requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
-// MIT license
-// https://gist.github.com/paulirish/1579671
 (function() {
   var lastTime = 0;
   var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -92,6 +87,13 @@ my.player = this;
 
 // Defaults
 var defaults = {
+  addText: 'Add',
+  deleteText: 'Delete',
+  editorClick: true,
+  timeLineClick: true,
+
+
+
   autoscroll: true,
   clickArea: 'text',
   showTitle: true,
@@ -116,7 +118,7 @@ var utils = (function (plugin) {
         if (!!ms) {
           return hour + ':' + min + ':' + sec + '.' + ms;
         } else {
-          return hour + ':' + min + ':' + sec;
+          return hour + ':' + min + ':' + sec + '.000';
         }
       // } else {
       //   if (!!ms) {
@@ -343,7 +345,7 @@ var trackList = function (plugin) {
 /*globals utils, eventEmitter, my, scrollable*/
 
 var widget = function (plugin) {
-  var my = {};
+  // var my = {};
   my.element = {};
   my.body = {};
   var on = function (event, callback) {
@@ -353,9 +355,32 @@ var widget = function (plugin) {
     eventEmitter.trigger(this, event);
   };
   var createTitle = function () {
+    var divHeader = utils.createEl('div', '-header-container');
     var header = utils.createEl('header', '-header');
+    var headerInput = utils.createEl('input', '-header-input');
+    headerInput.placeholder = "Type your subtitle here"
+    divHeader.appendChild(header)
+    divHeader.appendChild(headerInput)
     header.textContent = utils.localize('Subtitles');
-    return header;
+    var faPlus = utils.createEl('i', ' tooltip fa fa-plus fa-1 fa-plus-header');
+    var plusTooltip = utils.createEl('span', ' tooltiptext');
+    plusTooltip.textContent = my.settings.addText;
+    faPlus.appendChild(plusTooltip);
+    divHeader.appendChild(faPlus);
+    faPlus.addEventListener('click', function () {
+       my.track.mode = "hidden";
+       let startTime = (my.endTime + 0.1).toFixed(3);
+       let endTime = (my.endTime + 0.2).toFixed(3);
+       let cue = new VTTCue(startTime, endTime, headerInput.value);
+       my.track.addCue(cue);
+       cue = my.track.cues[my.track.cues.length-1];
+       my.startTime = cue.startTime;
+       my.endTime = cue.endTime;
+       let line = createLine(cue);
+       my.body.appendChild(line);
+       my.track.mode = "showing";
+    })
+    return divHeader;
   };
   var createSelector = function (){
     var selector = utils.createEl('select', '-selector');
@@ -375,29 +400,123 @@ var widget = function (plugin) {
     var clickedClasses = event.target.classList;
     var clickedTime = event.target.getAttribute('data-begin') || event.target.parentElement.getAttribute('data-begin');
     if (clickedTime !== undefined && clickedTime !== null) { // can be zero
-      if ((plugin.settings.clickArea === 'line') || // clickArea: 'line' activates on all elements
-        (plugin.settings.clickArea === 'timestamp' && clickedClasses.contains(plugin.prefix + '-timestamp')) ||
-        (plugin.settings.clickArea === 'text' && clickedClasses.contains(plugin.prefix + '-text'))) {
-        plugin.player.currentTime(clickedTime);
+      if (clickedClasses.contains(plugin.prefix + '-line') || clickedClasses.contains(plugin.prefix + '-text')) {
+        if (my.settings.editorClick) {
+          plugin.player.currentTime(clickedTime);
+        }
+      }  else if (clickedClasses.contains('fa-plus')) {
+        console.log('plus')
+      } else if (clickedClasses.contains('fa-times')) {
+        let nodes = Array.from(event.target.parentNode.parentNode.children);
+        my.track.removeCue(my.track.cues.getCueById(event.target.getAttribute('cue')))
+        my.track.mode = "hidden";
+        if (my.track.cues.length === 0) {
+          let cueLast = new VTTCue(0, 0, '');
+          cueLast.id = 0;
+          my.track.addCue(cueLast);
+          my.track.removeCue(my.track.cues.getCueById(0))
+          my.startTime = 0;
+          my.endTime = 0;
+        } else if (nodes.length != 1 && nodes[nodes.length - 1] === event.target.parentNode) {
+          let prev = nodes[nodes.indexOf(event.target.parentNode) - 1];
+          my.startTime = Number(prev.getAttribute('data-begin'));
+          my.endTime = Number(prev.getAttribute('data-end'));
+        } else if (nodes.length === 1) {
+          my.startTime = 0;
+          my.endTime = 0;
+        }
+        event.target.parentNode.parentNode.removeChild(event.target.parentNode);
+        my.track.mode = "showing";
       }
     }
   };
   var createLine = function (cue) {
     var line = utils.createEl('div', '-line');
-    var timestamp = utils.createEl('span', '-timestamp');
-    var endTimestamp = utils.createEl('span', '-timestamp');
+    var timestamp = utils.createEl('input', '-timestamp start');
+    var endTimestamp = utils.createEl('input', '-timestamp end');
     var text = utils.createEl('input', '-text');
+    // var faPlus = utils.createEl('i', ' tooltip fa fa-plus fa-1');
+    // var plusTooltip = utils.createEl('span', ' tooltiptext');
+    var faTimes = utils.createEl('i', ' tooltip fa fa-times fa-1');
+    var timesTooltip = utils.createEl('span', ' tooltiptext');
+    let cueId = `f${(~~(Math.random()*1e8)).toString(16)}`
+    faTimes.setAttribute('cue', cueId);
+    timestamp.addEventListener('change', function () {
+      // console.log(this.prev)
+       let nodes = Array.from(this.parentNode.children);
+       
+       if (this.value.match(/^\d+:\d+:\d+(\.\d+)?$/)) {
+        let endTime = Number(this.parentNode.querySelector(".end").value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
+        let startTime = Number(this.value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
+        if (endTime < startTime) {
+          alert("Start time must be less than end time!");
+          this.value = this.prev;
+        } else {
+          my.track.mode = "hidden";
+          cue.startTime = startTime;
+          my.track.mode = "showing";
+          line.setAttribute('data-begin', cue.startTime);
+          if (nodes[nodes.length - 1] === this.parentNode) {
+            my.startTime = cue.startTime;
+          } 
+          this.prev = this.value;
+        }
+       } else {
+        alert("Wrong input. Example: 00:10:25.123");
+        this.value = this.prev;
+       }
+    });
+    endTimestamp.addEventListener('change', function () {
+      let nodes = Array.from(this.parentNode.parentNode.children);
+       // console.log(this.value);
+       if (this.value.match(/^\d+:\d+:\d+(\.\d+)?$/)) {
+        let startTime = Number(this.parentNode.querySelector(".start").value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
+        let endTime = Number(this.value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
+        if (startTime > endTime) {
+          alert("End time must be bigger than start time!");
+          this.value = this.prev;
+        } else {
+          my.track.mode = "hidden";
+          cue.endTime = endTime;
+          my.track.mode = "showing";
+          line.setAttribute('data-end', cue.endTime);
+          if (nodes[nodes.length - 1] === this.parentNode) {
+            my.endTime = cue.endTime;
+          }
+          this.prev = this.value;
+        }
+       } else {
+        alert("Wrong input. Example: 00:10:25.123");
+        this.value = this.prev;
+       }
+    });
     line.setAttribute('data-begin', cue.startTime);
+    line.setAttribute('data-end', cue.endTime);
     line.setAttribute('tabindex', my._options.tabIndex || 0);
-    timestamp.textContent = utils.secondsToTime(cue.startTime);
-    endTimestamp.textContent = utils.secondsToTime(cue.endTime);
+    timestamp.value = utils.secondsToTime(cue.startTime);
+    timestamp.prev = utils.secondsToTime(cue.startTime);
+    endTimestamp.value = utils.secondsToTime(cue.endTime);
+    endTimestamp.prev = utils.secondsToTime(cue.endTime);
+    // plusTooltip.textContent = my.settings.addText;
+    timesTooltip.textContent = my.settings.deleteText;
     text.value = cue.text;
-    text.addEventListener('input', function (){
+    text.addEventListener('input', function () {
+       my.track.mode = "hidden";
        cue.text = this.value;
+       my.track.mode = "showing";
     })
     line.appendChild(timestamp);
     line.appendChild(endTimestamp);
+    line.appendChild(faTimes);
     line.appendChild(text);
+    // line.appendChild(faPlus);
+
+    // faPlus.appendChild(plusTooltip);
+    faTimes.appendChild(timesTooltip);
+
+    my.activeCues[cueId] = cue;
+    cue.id = cueId;
+
     return line;
   };
   
@@ -405,6 +524,12 @@ var widget = function (plugin) {
     if (typeof track !== 'object') {
       track = plugin.player.textTracks()[track];
     }
+    if (track === undefined) {
+      track = plugin.player.addTextTrack("captions", "English", "en");
+    }
+
+    my.track = track;
+    my.activeCues = {};
     var body = utils.createEl('div', '-body');
     var line, i;
     var fragment = document.createDocumentFragment();
@@ -420,7 +545,7 @@ var widget = function (plugin) {
       }, 100);
     } else {
       var cues = track.cues;
-      my.cues = cues;
+      // my.cues = cues;
       for (i = 0; i < cues.length; i++) {
         line = createLine(cues[i]);
         fragment.appendChild(line);
@@ -438,6 +563,8 @@ var widget = function (plugin) {
     var el = document.createElement('div');
     my._options = options;
     my.element = el;
+    my.startTime = 0;
+    my.endTime = 0;
     el.setAttribute('id', plugin.prefix + '-' + plugin.player.id());
     if (plugin.settings.showTitle) {
       var title = createTitle();
@@ -494,8 +621,6 @@ var widget = function (plugin) {
 
 var transcript = function (options) {
   my.player = this;
-  my.validTracks = trackList.get();
-  my.currentTrack = trackList.active(my.validTracks);
   my.settings = videojs.mergeOptions(defaults, options);
   my.widget = widget.create(options);
   var timeUpdate = function () {
@@ -505,6 +630,8 @@ var transcript = function (options) {
     my.currentTrack = trackList.active(my.validTracks);
     my.widget.setTrack(my.currentTrack);
   };
+  my.validTracks = trackList.get();
+  my.currentTrack = trackList.active(my.validTracks);
   if (my.validTracks.length > 0) {
     updateTrack();
     my.player.on('timeupdate', timeUpdate);
@@ -516,10 +643,10 @@ var transcript = function (options) {
     throw new Error('videojs-transcript: No tracks found!');
   }
   return {
-    el: function () {
+    editor: function () {
       return my.widget.el();
     },
-    setTrack: my.widget.setTrack
+    track: my.currentTrack
   };
 };
 videojs.registerPlugin('transcript', transcript);

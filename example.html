@@ -6,21 +6,7 @@
 
   <link href="http://vjs.zencdn.net/7.0.0/video-js.css" rel="stylesheet">
   <link href="css/videojs-transcript.css" title="Example 1" rel="stylesheet">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    .info {
-      background-color: #eee;
-      border: thin solid #333;
-      border-radius: 3px;
-      padding: 0 5px;
-      text-align: center;
-    }
-    .video-js {
-      margin: 40px auto;
-    }
-  </style>
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <script src="http://vjs.zencdn.net/7.0.0/video.js"></script>
   <script src="dist/videojs-transcript.js"></script>
   <script src="timeliner.js"></script>
@@ -37,7 +23,7 @@
       </p>
       <source src="http://www.openbeelden.nl/files/92/104101.ed_hd.mp4" type="video/mp4">
       <source src="http://www.openbeelden.nl/files/92/104105.ed_hd.webm" type="video/webm">
-      <track kind="captions" src="http://localhost:8080/captions.en.vtt" srclang="en" label="English" default>
+      <!-- <track kind="captions" src="http://localhost:8080/captions.en.vtt" srclang="en" label="English" default> -->
     </video>
   </div>
   <div id="transcript"></div>
@@ -45,17 +31,20 @@
       var video = videojs('video').ready(function(){
 
           // fire up the plugin
-          var options = {};
+          var options = {
+            // addText: 'TestAdd',
+            // deleteText: 'TestDelete',
+            // editorClick: false,
+            // timeLineClick: false
+          };
           var transcript = this.transcript(options);
 
           // attach the widget to the page
           var transcriptContainer = document.querySelector('#transcript');
-          transcriptContainer.appendChild(transcript.el());
+          transcriptContainer.appendChild(transcript.editor());
+
+          let textTrack = transcript.track;
       });
-
-      // var timeliner = new Timeliner();
-
-      // timeliner.load({"layers":[{"name":"Subtitles","values":[{"time":0.1,"value":0,"_color":"#abac31","tween":"quadEaseOut"},{"time":0.5,"value":-1.000001,"_color":"#355ce8","tween":"quadEaseIn"},{"time":1.1,"value":0,"_color":"#47e90","tween":"quadEaseOut"},{"time":1.7,"value":-0.5,"_color":"#f76bca","tween":"quadEaseOut"},{"time":2.3,"value":0,"_color":"#d59cfd"}],"_value":0,"_color":"#9ab426"}]});
   </script>
 </body>
 </html>
