@@ -1,4 +1,4 @@
-<!doctype html>
+  <!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -8,8 +8,8 @@
   <link href="css/videojs-transcript.css" title="Example 1" rel="stylesheet">
   <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <script src="http://vjs.zencdn.net/7.0.0/video.js"></script>
-  <script src="dist/videojs-transcript.js"></script>
-  <script src="timeliner.js"></script>
+  <script src="js/videojs-transcript.js"></script>
+  <script src="js/timeliner.js"></script>
   </head>
   <body>
   <div class="video-container">
@@ -27,6 +27,7 @@
     </video>
   </div>
   <div id="transcript"></div>
+  <!-- <div id="timeliner"></div> -->
   <script>
       var video = videojs('video').ready(function(){
 
@@ -44,7 +45,22 @@
           transcriptContainer.appendChild(transcript.editor());
 
           let textTrack = transcript.track;
-      });
+
+          // initialize timeliner
+          // var timeliner = new Timeliner();
+          // timeliner.addLayer('x');
+          // timeliner.addLayer('y');
+          // timeliner.addLayer('rotate');
+
+          // var o = {"version":"1.2.0","modified":"Mon Dec 08 2014 10:41:11 GMT+0800 (SGT)","title":"Untitled", "layers": [{"name":"x","values":[],"tmpValue":0,"_color":"#10b00d"},{"name":"y","values":[{"time":0,"value":-1.2999770000000004,"_color":"#4a2392","tween":"quadEaseIn"},{"time":3.3,"value":-1.1999850000000003,"_color":"#cddfd8"}],"tmpValue":-1.2999770000000004,"_color":"#344260"},{"name":"rotate","values":[{"time":0,"value":4.200005,"_color":"#ec9bb5","tween":"quadEaseInOut"},{"time":2.1,"value":28.000009,"_color":"#ac8e14","tween":"quadEaseIn"},{"time":5,"value":50.400018,"_color":"#5c659"}],"tmpValue":50.400018,"_color":"#1fa995"}]};
+          // timeliner.load(o);
+
+
+          // timeliner.load({"layers":[{"name":"Subtitles","values":[]}]});
+
+          // var timelinerContainer = document.querySelector('#timeliner');
+          // timelinerContainer.appendChild(timeliner)
+        });
   </script>
 </body>
 </html>

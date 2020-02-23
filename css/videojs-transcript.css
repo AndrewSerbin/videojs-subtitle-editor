@@ -11,13 +11,19 @@ body {
 .video-js {
   margin: 40px auto;
 }
-    
+
+.video-container {
+  float: left;
+  margin-left: 20px;
+  margin-right: 25px;
+}
+
 #transcript {
   width: 400px;
   margin: auto;
   font-family: Arial, sans-serif;
   display: inline-block;
-  float: right;
+  /*float: right;*/
   background-color: #f5f7f8;
 }
 

@@ -94,7 +94,7 @@ var defaults = {
 
 
 
-  autoscroll: true,
+  autoscroll: false,
   clickArea: 'text',
   showTitle: true,
   showTrackSelector: true,
@@ -127,6 +127,13 @@ var utils = (function (plugin) {
       //     return min + ':' + sec;
       //   }
       // }
+    },
+    timeToSeconds: function(time) {
+      let times = time.split(":");
+      let hr = Number(times[0]*3600);
+      let mn = Number(times[1]*60);
+      let sc = Number(times[2]);
+      return hr + mn + sc;
     },
     localize: function (string) {
       return string; // TODO: do something here;
@@ -374,8 +381,8 @@ var widget = function (plugin) {
        let cue = new VTTCue(startTime, endTime, headerInput.value);
        my.track.addCue(cue);
        cue = my.track.cues[my.track.cues.length-1];
-       my.startTime = cue.startTime;
-       my.endTime = cue.endTime;
+       // my.startTime = cue.startTime;
+       // my.endTime = cue.endTime;
        let line = createLine(cue);
        my.body.appendChild(line);
        my.track.mode = "showing";
@@ -431,6 +438,9 @@ var widget = function (plugin) {
     }
   };
   var createLine = function (cue) {
+    my.startTime = cue.startTime;
+    my.endTime = cue.endTime;
+
     var line = utils.createEl('div', '-line');
     var timestamp = utils.createEl('input', '-timestamp start');
     var endTimestamp = utils.createEl('input', '-timestamp end');
@@ -443,13 +453,23 @@ var widget = function (plugin) {
     faTimes.setAttribute('cue', cueId);
     timestamp.addEventListener('change', function () {
       // console.log(this.prev)
-       let nodes = Array.from(this.parentNode.children);
+       let nodes = Array.from(this.parentNode.parentNode.children);
        
-       if (this.value.match(/^\d+:\d+:\d+(\.\d+)?$/)) {
-        let endTime = Number(this.parentNode.querySelector(".end").value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
-        let startTime = Number(this.value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
+       if (this.value.match(/^\d{1,2}:\d{1,2}:\d{1,2}(\.\d{1,3})?$/)) {
+        let endTime = utils.timeToSeconds(this.parentNode.querySelector(".end").value);
+        let startTime = utils.timeToSeconds(this.value);
+
+        let endTimePrev;
+        if (nodes.indexOf(this.parentNode) != 0) {
+          endTimePrev = utils.timeToSeconds(nodes[nodes.indexOf(this.parentNode) - 1].querySelector(".end").value);
+        }
+        
+
         if (endTime < startTime) {
           alert("Start time must be less than end time!");
+          this.value = this.prev;
+        } else if (endTimePrev && startTime <= endTimePrev) {
+          alert("Start time must be bigger than previous end time!");
           this.value = this.prev;
         } else {
           my.track.mode = "hidden";
@@ -469,11 +489,23 @@ var widget = function (plugin) {
     endTimestamp.addEventListener('change', function () {
       let nodes = Array.from(this.parentNode.parentNode.children);
        // console.log(this.value);
-       if (this.value.match(/^\d+:\d+:\d+(\.\d+)?$/)) {
-        let startTime = Number(this.parentNode.querySelector(".start").value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
-        let endTime = Number(this.value.split(":").reduce((accumulator, currentValue) => accumulator + currentValue));
+       if (this.value.match(/^\d{1,2}:\d{1,2}:\d{1,2}(\.\d{1,3})?$/)) {
+        let startTime = utils.timeToSeconds(this.parentNode.querySelector(".start").value);
+        let endTime = utils.timeToSeconds(this.value);
+
+        let startTimeNext;
+        if (nodes.indexOf(this.parentNode) != (nodes.length-1)) {
+          startTimeNext = utils.timeToSeconds(nodes[nodes.indexOf(this.parentNode) + 1].querySelector(".start").value);
+        }
+
         if (startTime > endTime) {
           alert("End time must be bigger than start time!");
+          this.value = this.prev;
+        } else if (startTimeNext && endTime >= startTimeNext) {
+          alert("End time must be less than next start time!");
+          this.value = this.prev;
+        } else if (endTime > my.player.duration()) {
+          alert("End time must be less than video duration time!");
           this.value = this.prev;
         } else {
           my.track.mode = "hidden";
@@ -525,7 +557,7 @@ var widget = function (plugin) {
       track = plugin.player.textTracks()[track];
     }
     if (track === undefined) {
-      track = plugin.player.addTextTrack("captions", "English", "en");
+      track = plugin.player.addTextTrack("captions", "Manual");
     }
 
     my.track = track;
