@@ -9,7 +9,45 @@
   <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <script src="http://vjs.zencdn.net/7.0.0/video.js"></script>
   <script src="js/videojs-transcript.js"></script>
-  <script src="js/timeliner.js"></script>
+
+  <link id="theme" href="css/dark.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="js/libs/codemirror/codemirror.css">
+  <link rel="stylesheet" href="js/libs/codemirror/theme/monokai.css">
+  <script src="js/libs/codemirror/codemirror.js"></script>
+  <script src="js/libs/codemirror/mode/javascript.js"></script>
+
+  <link rel="stylesheet" href="js/libs/codemirror/addon/dialog/dialog.css">
+  <link rel="stylesheet" href="js/libs/codemirror/addon/search/matchesonscrollbar.css">
+  <script src="js/libs/codemirror/addon/dialog/dialog.js"></script>
+  <script src="js/libs/codemirror/addon/search/searchcursor.js"></script>
+  <script src="js/libs/codemirror/addon/search/search.js"></script>
+  <script src="js/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
+  <script src="js/libs/codemirror/addon/search/matchesonscrollbar.js"></script>
+  <script src="js/libs/codemirror/addon/search/jump-to-line.js"></script>
+
+  <script src="js/libs/signals.min.js"></script>
+  <script src="js/libs/ui.js"></script>
+
+  <script src="js/Editor.js"></script>
+  <script src="js/Code.js"></script>
+  <script src="js/Config.js"></script>
+  <script src="js/Menubar.js"></script>
+  <script src="js/Menubar.File.js"></script>
+  <script src="js/Menubar.Edit.js"></script>
+  <script src="js/Menubar.Examples.js"></script>
+  <script src="js/Menubar.Help.js"></script>
+  <script src="js/Sidebar.js"></script>
+  <script src="js/Sidebar.Animation.js"></script>
+  <script src="js/Sidebar.Project.js"></script>
+  <script src="js/Sidebar.Settings.js"></script>
+  <script src="js/Viewport.js"></script>
+  <script src="js/Controls.js"></script>
+  <script src="js/Timeline.js"></script>
+  <script src="js/Timeline.Animations.js"></script>
+  <script src="js/Timeline.Curves.js"></script>
+
+  <script src="js/Frame.js"></script>
   </head>
   <body>
   <div class="video-container">
@@ -23,13 +61,17 @@
       </p>
       <source src="http://www.openbeelden.nl/files/92/104101.ed_hd.mp4" type="video/mp4">
       <source src="http://www.openbeelden.nl/files/92/104105.ed_hd.webm" type="video/webm">
-      <!-- <track kind="captions" src="http://localhost:8080/captions.en.vtt" srclang="en" label="English" default> -->
+      <track kind="captions" src="http://localhost:8080/captions.en.vtt" srclang="en" label="English" default>
     </video>
   </div>
   <div id="transcript"></div>
-  <!-- <div id="timeliner"></div> -->
+  <div id="timeliner"></div>
   <script>
       var video = videojs('video').ready(function(){
+        this.on('loadedmetadata', function(){
+          
+        
+        
 
           // fire up the plugin
           var options = {
@@ -46,21 +88,20 @@
 
           let textTrack = transcript.track;
 
-          // initialize timeliner
-          // var timeliner = new Timeliner();
-          // timeliner.addLayer('x');
-          // timeliner.addLayer('y');
-          // timeliner.addLayer('rotate');
 
-          // var o = {"version":"1.2.0","modified":"Mon Dec 08 2014 10:41:11 GMT+0800 (SGT)","title":"Untitled", "layers": [{"name":"x","values":[],"tmpValue":0,"_color":"#10b00d"},{"name":"y","values":[{"time":0,"value":-1.2999770000000004,"_color":"#4a2392","tween":"quadEaseIn"},{"time":3.3,"value":-1.1999850000000003,"_color":"#cddfd8"}],"tmpValue":-1.2999770000000004,"_color":"#344260"},{"name":"rotate","values":[{"time":0,"value":4.200005,"_color":"#ec9bb5","tween":"quadEaseInOut"},{"time":2.1,"value":28.000009,"_color":"#ac8e14","tween":"quadEaseIn"},{"time":5,"value":50.400018,"_color":"#5c659"}],"tmpValue":50.400018,"_color":"#1fa995"}]};
-          // timeliner.load(o);
-
-
-          // timeliner.load({"layers":[{"name":"Subtitles","values":[]}]});
 
           // var timelinerContainer = document.querySelector('#timeliner');
           // timelinerContainer.appendChild(timeliner)
+
+          // console.log(transcript.my)
+
+          
+
+
+
+
         });
+  });
   </script>
 </body>
 </html>

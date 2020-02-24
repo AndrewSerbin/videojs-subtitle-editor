@@ -28,6 +28,7 @@ body {
 }
 
 .transcript-body {
+  /*height: 50vh;*/
   height: 85vh;
   overflow-y: scroll;
 }

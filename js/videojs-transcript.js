@@ -674,10 +674,63 @@ var transcript = function (options) {
   } else {
     throw new Error('videojs-transcript: No tracks found!');
   }
+
+
+
+
+var editor = new Editor();
+          // console.log(transcript.my.player.duration())
+          editor.duration = my.player.duration();
+
+      var viewport = new Viewport( editor );
+      // document.body.appendChild( viewport.dom );
+
+      // var code = new Code( editor );
+      // document.body.appendChild( code.dom );
+
+      // var sidebar = new Sidebar( editor );
+      // document.body.appendChild( sidebar.dom );
+      let timelinerContainer = document.querySelector('#timeliner');
+      var controls = new Controls( editor, my );
+      timelinerContainer.appendChild( controls.dom );
+
+      var timeline = new Timeline( editor );
+      timelinerContainer.appendChild( timeline.dom );
+
+      editor.signals.windowResized.dispatch();
+
+      let animations = Array.from(my.track.cues).map(cue => [cue.text, cue.startTime, cue.endTime, 0, 0, true])
+
+
+
+      editor.clear();
+            editor.fromJSON( {
+  "config": {},
+  "libraries": [],
+  "includes": [],
+  "effects": [
+    [
+      
+    ]
+  ],
+  "animations": animations
+});
+
+
+
+
+
+
+
+
+
+
   return {
     editor: function () {
       return my.widget.el();
     },
+    // timeliner: timelinerContainer,
+    my: my,
     track: my.currentTrack
   };
 };
