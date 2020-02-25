@@ -38,10 +38,10 @@ var Controls = function ( editor, my ) {
 
 		if (editor.player.isPlaying) {
 			editor.stop();	
-			my.player.pause();
+			// my.player.pause();
 		} else {
 			editor.play();
-			my.player.play();
+			// my.player.play();
 		}
 		// editor.player.isPlaying ? editor.stop() : editor.play();
 		// editor.player.isPlaying ? my.player.pause() : my.player.play();

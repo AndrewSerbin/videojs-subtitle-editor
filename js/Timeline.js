@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-var Timeline = function ( editor ) {
+var Timeline = function ( editor, my ) {
 
 	var signals = editor.signals;
 	var player = editor.player;
@@ -78,11 +78,16 @@ var Timeline = function ( editor ) {
 	canvas.style.position = 'absolute';
 	canvas.addEventListener( 'mousedown', function ( event ) {
 
+
+
 		event.preventDefault();
 
 		function onMouseMove( event ) {
 
 			editor.setTime( ( event.offsetX + scroller.scrollLeft ) / scale );
+			if (my.settings.timeLineClick) {
+				my.player.currentTime(player.currentTime)
+			}
 
 		}
 
@@ -235,6 +240,9 @@ var Timeline = function ( editor ) {
 
 	signals.timeChanged.add( function () {
 		// console.log('time changed canvas')
+		// if (my.settings.timeLineClick) {
+		// 	my.player.currentTime(player.currentTime)
+		// }
 		updateTimeMark();
 
 	} );

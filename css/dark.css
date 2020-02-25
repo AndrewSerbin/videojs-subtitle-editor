@@ -40,8 +40,8 @@ button {
 	width: 600px;
 	position: absolute;
 	background-color: #666;
-	top: 53%;
-	left: 27px;
+	top: 350px;
+	left: 28px;
 	right: 600px;
 	height: 32px;
 }
@@ -49,24 +49,24 @@ button {
 #timeline {
 	width: 600px;
 	position: absolute;
-	top: 57%;
-	left: 27px;
+	top: 364px;
+	left: 28px;
 	right: 300px;
 	height: 103px;
 	background-color: #555;
 }
 
 	#timeline .block {
-		background-color: #88f;
+		/*background-color: #88f;
 		border-left: 1px solid #aaf;
 		border-top: 1px solid #aaf;
 		border-right: 1px solid #77f;
-		border-bottom: 1px solid #77f;
+		border-bottom: 1px solid #77f;*/
 		overflow: hidden;
 	}
 
 	#timeline .block:hover {
-		background-color: #99f;
+		background-color: #c9f3f3;
 	}
 
 	#timeline .block .name {
@@ -77,11 +77,11 @@ button {
 	}
 
 	#timeline .block.selected {
-		background-color: #8f8;
-		border-left: 1px solid #afa;
-		border-top: 1px solid #afa;
-		border-right: 1px solid #5f5;
-		border-bottom: 1px solid #5f5;
+		background-color: #e2fbfb;
+		border-left: 1px solid #e2fbfb;
+		border-top: 1px solid #e2fbfb;
+		border-right: 1px solid #e2fbfb;
+		border-bottom: 1px solid #e2fbfb;
 	}
 
 	#timeline .block.disabled {

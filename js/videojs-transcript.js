@@ -386,6 +386,7 @@ var widget = function (plugin) {
        let line = createLine(cue);
        my.body.appendChild(line);
        my.track.mode = "showing";
+       my.updateCueTimeline();
     })
     return divHeader;
   };
@@ -410,6 +411,8 @@ var widget = function (plugin) {
       if (clickedClasses.contains(plugin.prefix + '-line') || clickedClasses.contains(plugin.prefix + '-text')) {
         if (my.settings.editorClick) {
           plugin.player.currentTime(clickedTime);
+          my.editor.setTime(clickedTime)
+          // console.log(my.editor.player.currentTime(10))
         }
       }  else if (clickedClasses.contains('fa-plus')) {
         console.log('plus')
@@ -434,6 +437,7 @@ var widget = function (plugin) {
         }
         event.target.parentNode.parentNode.removeChild(event.target.parentNode);
         my.track.mode = "showing";
+        my.updateCueTimeline();
       }
     }
   };
@@ -480,6 +484,7 @@ var widget = function (plugin) {
             my.startTime = cue.startTime;
           } 
           this.prev = this.value;
+          my.updateCueTimeline();
         }
        } else {
         alert("Wrong input. Example: 00:10:25.123");
@@ -516,6 +521,7 @@ var widget = function (plugin) {
             my.endTime = cue.endTime;
           }
           this.prev = this.value;
+          my.updateCueTimeline();
         }
        } else {
         alert("Wrong input. Example: 00:10:25.123");
@@ -536,6 +542,7 @@ var widget = function (plugin) {
        my.track.mode = "hidden";
        cue.text = this.value;
        my.track.mode = "showing";
+       my.updateCueTimeline();
     })
     line.appendChild(timestamp);
     line.appendChild(endTimestamp);
@@ -652,10 +659,58 @@ var widget = function (plugin) {
 }(my);
 
 var transcript = function (options) {
+  var editor = new Editor();
+          // console.log(transcript.my.player.duration())
+          editor.duration = this.duration();
+
+      // var viewport = new Viewport( editor );
+      // document.body.appendChild( viewport.dom );
+
+      // var code = new Code( editor );
+      // document.body.appendChild( code.dom );
+
+      // var sidebar = new Sidebar( editor );
+      // document.body.appendChild( sidebar.dom );
+      let timelinerContainer = document.querySelector('#timeliner');
+      // var controls = new Controls( editor, my );
+      // timelinerContainer.appendChild( controls.dom );
+
+      var timeline = new Timeline( editor, my );
+      timelinerContainer.appendChild( timeline.dom );
+
+      editor.signals.windowResized.dispatch();
+
+      this.on("play", function (e) {
+        editor.play();
+      });
+
+      this.on("pause", function (e) {
+        editor.stop();  
+      });
+
+  var updateCueTimeline = function() {
+      // console.log('test')
+      editor.clear();
+      editor.fromJSON( {
+        "config": {},
+        "libraries": [],
+        "includes": [],
+        "effects": [
+          [
+            
+          ]
+        ],
+        "animations": Array.from(my.track.cues).map(cue => [cue.text, cue.startTime, cue.endTime, 0, 0, true])
+      });
+  }
+  my.editor = editor;
+  my.updateCueTimeline = updateCueTimeline;
   my.player = this;
   my.settings = videojs.mergeOptions(defaults, options);
   my.widget = widget.create(options);
   var timeUpdate = function () {
+    console.log(my.player.currentTime())
+    my.editor.setTime(my.player.currentTime())
     my.widget.setCue(my.player.currentTime());
   };
   var updateTrack = function () {
@@ -676,53 +731,7 @@ var transcript = function (options) {
   }
 
 
-
-
-var editor = new Editor();
-          // console.log(transcript.my.player.duration())
-          editor.duration = my.player.duration();
-
-      var viewport = new Viewport( editor );
-      // document.body.appendChild( viewport.dom );
-
-      // var code = new Code( editor );
-      // document.body.appendChild( code.dom );
-
-      // var sidebar = new Sidebar( editor );
-      // document.body.appendChild( sidebar.dom );
-      let timelinerContainer = document.querySelector('#timeliner');
-      var controls = new Controls( editor, my );
-      timelinerContainer.appendChild( controls.dom );
-
-      var timeline = new Timeline( editor );
-      timelinerContainer.appendChild( timeline.dom );
-
-      editor.signals.windowResized.dispatch();
-
-      let animations = Array.from(my.track.cues).map(cue => [cue.text, cue.startTime, cue.endTime, 0, 0, true])
-
-
-
-      editor.clear();
-            editor.fromJSON( {
-  "config": {},
-  "libraries": [],
-  "includes": [],
-  "effects": [
-    [
-      
-    ]
-  ],
-  "animations": animations
-});
-
-
-
-
-
-
-
-
+  my.updateCueTimeline();
 
 
   return {
