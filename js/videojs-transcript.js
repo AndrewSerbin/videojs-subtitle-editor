@@ -538,6 +538,7 @@ var widget = function (plugin) {
     // plusTooltip.textContent = my.settings.addText;
     timesTooltip.textContent = my.settings.deleteText;
     text.value = cue.text;
+    text.setAttribute('cue', cueId);
     text.addEventListener('input', function () {
        my.track.mode = "hidden";
        cue.text = this.value;
@@ -688,6 +689,9 @@ var transcript = function (options) {
         editor.stop();  
       });
 
+      // console.log(this)
+      
+
   var updateCueTimeline = function() {
       // console.log('test')
       editor.clear();
@@ -705,12 +709,19 @@ var transcript = function (options) {
   }
   my.editor = editor;
   my.updateCueTimeline = updateCueTimeline;
+  editor.updateCueTimeline = updateCueTimeline;
   my.player = this;
   my.settings = videojs.mergeOptions(defaults, options);
   my.widget = widget.create(options);
-  var timeUpdate = function () {
-    console.log(my.player.currentTime())
+
+  document.querySelector('.vjs-progress-control').addEventListener('click', (event) => {
+    // console.log(my.player.currentTime())
     my.editor.setTime(my.player.currentTime())
+  })
+
+  var timeUpdate = function () {
+    // console.log(my.player.currentTime())
+    // my.editor.setTime(my.player.currentTime())
     my.widget.setCue(my.player.currentTime());
   };
   var updateTrack = function () {
@@ -732,6 +743,9 @@ var transcript = function (options) {
 
 
   my.updateCueTimeline();
+
+  var transcriptContainer = document.querySelector('#transcript');
+  transcriptContainer.appendChild(my.widget.el());
 
 
   return {

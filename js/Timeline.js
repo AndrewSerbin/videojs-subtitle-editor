@@ -171,7 +171,7 @@ var Timeline = function ( editor, my ) {
 	}, false );
 	timeline.dom.appendChild( scroller );
 
-	var elements = new Timeline.Animations( editor );
+	var elements = new Timeline.Animations( editor, my );
 	scroller.appendChild( elements.dom );
 
 	/*

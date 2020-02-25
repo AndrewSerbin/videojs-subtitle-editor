@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-Timeline.Animations = function ( editor ) {
+Timeline.Animations = function ( editor, my ) {
 
 	var signals = editor.signals;
 
@@ -24,14 +24,24 @@ Timeline.Animations = function ( editor ) {
 
 		dom.addEventListener( 'click', function ( event ) {
 
+			// console.log(animation)
+			if(my.settings.timeLineClick) {
+				my.editor.setTime(animation.start)
+				my.player.currentTime(animation.start)
+			}
 			editor.selectAnimation( animation );
 
 		} );
 
 		dom.addEventListener( 'input', function ( event ) {
-
-			console.log('input');
-
+			let cueInput = document.querySelector("div[data-begin='" + animation.start + "']").querySelector(".transcript-text")
+			cueInput.value = event.target.value;
+			my.track.mode = "hidden";
+			my.activeCues[cueInput.getAttribute('cue')].text = event.target.value
+	        my.track.mode = "showing";
+			// console.log(cueInput.getAttribute('cue'))
+			// cueInput.dispatchEvent(new Event('input', { bubbles: true }))
+			// this.dispatchEvent(new Event('click', { bubbles: true }));
 		} );
 		// dom.addEventListener( 'mousedown', function ( event ) {
 
