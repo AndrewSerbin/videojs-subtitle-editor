@@ -59,9 +59,8 @@
       <p>
         Your browser doesn't support video. Please <a href="http://browsehappy.com/">upgrade your browser</a> to see the example.
       </p>
-      <source src="http://www.openbeelden.nl/files/92/104101.ed_hd.mp4" type="video/mp4">
-      <source src="http://www.openbeelden.nl/files/92/104105.ed_hd.webm" type="video/webm">
-      <track kind="captions" src="http://localhost:8080/captions.en.vtt" srclang="en" label="English" default>
+      <!-- <source src="https://www.openbeelden.nl/files/92/104101.ed_hd.mp4" type="video/mp4"> -->
+      <source src="https://www.openbeelden.nl/files/92/104105.ed_hd.webm" type="video/webm">
     </video>
   </div>
   <div id="transcript"></div>
@@ -69,35 +68,38 @@
   <script>
       var video = videojs('video').ready(function(){
         this.on('loadedmetadata', function(){
-          
-        
-        
+          let inputTrack = this.addTextTrack("captions", "English", "en");
+          inputTrack.addCue(new VTTCue(2.000, 8.120, "The orange open project movie presents"));
+          inputTrack.addCue(new VTTCue(15.000, 17.951, " At the left we can see..."));
+          inputTrack.addCue(new VTTCue(18.166, 20.083, " At the right we can see the..."));
+          inputTrack.addCue(new VTTCue(20.119, 21.962, " ...the head-snarlers"));
+          inputTrack.addCue(new VTTCue(21.999, 24.368, " Everything is safe. Perfectly safe."));
+          inputTrack.addCue(new VTTCue(24.582, 27.035, " Emo?"));
+          inputTrack.addCue(new VTTCue(28.206, 29.996, " Watch out!"));
+          inputTrack.addCue(new VTTCue(47.037, 48.494, " Are you hurt?"));
+          inputTrack.addCue(new VTTCue(51.994, 53.949, " I don't think so. You?"));
+          inputTrack.addCue(new VTTCue(55.160, 56.985, " I'm Ok."));
 
           // fire up the plugin
           var options = {
             // addText: 'TestAdd',
             // deleteText: 'TestDelete',
             // editorClick: false,
-            // timeLineClick: false
+            // timeLineClick: false,
+            textTrack: inputTrack
           };
           var transcript = this.transcript(options);
 
           let textTrack = transcript.track;
 
+          // console.log(textTrack)
 
-
-          // var timelinerContainer = document.querySelector('#timeliner');
-          // timelinerContainer.appendChild(timeliner)
-
-          // console.log(transcript.my)
-
-          
-
-
-
+          document.querySelector(".transcript").addEventListener("timeInputError", (event) => {
+            alert(event.detail)
+          })
 
         });
-  });
+      });
   </script>
 </body>
 </html>

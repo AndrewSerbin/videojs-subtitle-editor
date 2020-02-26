@@ -93,7 +93,6 @@ var defaults = {
   timeLineClick: true,
 
 
-
   autoscroll: false,
   clickArea: 'text',
   showTitle: true,
@@ -116,6 +115,7 @@ var utils = (function (plugin) {
       hour = (hour < 10) ? '0' + hour : hour;
       // if (hour > 0) {
         if (!!ms) {
+          ms = Number('0.' + ms).toFixed(3).split('.')[1]
           return hour + ':' + min + ':' + sec + '.' + ms;
         } else {
           return hour + ':' + min + ':' + sec + '.000';
@@ -421,26 +421,34 @@ var widget = function (plugin) {
         my.track.removeCue(my.track.cues.getCueById(event.target.getAttribute('cue')))
         my.track.mode = "hidden";
         if (my.track.cues.length === 0) {
-          let cueLast = new VTTCue(0, 0, '');
-          cueLast.id = 0;
-          my.track.addCue(cueLast);
-          my.track.removeCue(my.track.cues.getCueById(0))
+          // let cueLast = new VTTCue(-1, 0, '');
+          // cueLast.id = 0;
+          // my.track.addCue(cueLast);
+          // my.track.removeCue(my.track.cues.getCueById(0))
           my.startTime = 0;
           my.endTime = 0;
         } else if (nodes.length != 1 && nodes[nodes.length - 1] === event.target.parentNode) {
           let prev = nodes[nodes.indexOf(event.target.parentNode) - 1];
           my.startTime = Number(prev.getAttribute('data-begin'));
           my.endTime = Number(prev.getAttribute('data-end'));
+          my.track.mode = "showing";
         } else if (nodes.length === 1) {
           my.startTime = 0;
           my.endTime = 0;
+          my.track.mode = "showing";
         }
         event.target.parentNode.parentNode.removeChild(event.target.parentNode);
-        my.track.mode = "showing";
+        
         my.updateCueTimeline();
       }
     }
   };
+
+  var createTimeInputErrorEvent = function(text) {
+    var event = new CustomEvent('timeInputError', { 'detail': text });
+    document.querySelector(".transcript").dispatchEvent(event);
+  }
+
   var createLine = function (cue) {
     my.startTime = cue.startTime;
     my.endTime = cue.endTime;
@@ -470,10 +478,12 @@ var widget = function (plugin) {
         
 
         if (endTime < startTime) {
-          alert("Start time must be less than end time!");
+          // alert("Start time must be less than end time!");
+          createTimeInputErrorEvent("Start time must be less than end time!");
           this.value = this.prev;
         } else if (endTimePrev && startTime <= endTimePrev) {
-          alert("Start time must be bigger than previous end time!");
+          // alert("Start time must be bigger than previous end time!");
+          createTimeInputErrorEvent("Start time must be bigger than previous end time!");
           this.value = this.prev;
         } else {
           my.track.mode = "hidden";
@@ -487,7 +497,8 @@ var widget = function (plugin) {
           my.updateCueTimeline();
         }
        } else {
-        alert("Wrong input. Example: 00:10:25.123");
+        // alert("Wrong input. Example: 00:10:25.123");
+        createTimeInputErrorEvent("Wrong input. Example: 00:10:25.123")
         this.value = this.prev;
        }
     });
@@ -504,13 +515,16 @@ var widget = function (plugin) {
         }
 
         if (startTime > endTime) {
-          alert("End time must be bigger than start time!");
+          // alert("End time must be bigger than start time!");
+          createTimeInputErrorEvent("End time must be bigger than start time!");
           this.value = this.prev;
         } else if (startTimeNext && endTime >= startTimeNext) {
-          alert("End time must be less than next start time!");
+          // alert("End time must be less than next start time!");
+          createTimeInputErrorEvent("End time must be less than next start time!");
           this.value = this.prev;
         } else if (endTime > my.player.duration()) {
-          alert("End time must be less than video duration time!");
+          // alert("End time must be less than video duration time!");
+          createTimeInputErrorEvent("End time must be less than video duration time!");
           this.value = this.prev;
         } else {
           my.track.mode = "hidden";
@@ -524,7 +538,8 @@ var widget = function (plugin) {
           my.updateCueTimeline();
         }
        } else {
-        alert("Wrong input. Example: 00:10:25.123");
+        // alert("Wrong input. Example: 00:10:25.123");
+        createTimeInputErrorEvent("Wrong input. Example: 00:10:25.123");
         this.value = this.prev;
        }
     });
@@ -561,14 +576,20 @@ var widget = function (plugin) {
   };
   
   var createTranscriptBody = function (track) {
-    if (typeof track !== 'object') {
-      track = plugin.player.textTracks()[track];
-    }
-    if (track === undefined) {
-      track = plugin.player.addTextTrack("captions", "Manual");
-    }
+    // if (typeof track !== 'object') {
+    //   track = plugin.player.textTracks()[track];
+    // }
+    // if (track === undefined) {
+    //   track = plugin.player.addTextTrack("captions", "Manual");
+    // }
 
-    my.track = track;
+// console.log(my.settings.textTrack)
+    // if (my.settings.textTrack) {
+    //   track = my.settings.textTrack;
+    // }
+
+    // my.track = track;
+    track = my.track;
     my.activeCues = {};
     var body = utils.createEl('div', '-body');
     var line, i;
@@ -691,9 +712,27 @@ var transcript = function (options) {
 
       // console.log(this)
       
+  my.player = this;
+my.settings = videojs.mergeOptions(defaults, options);
+      let inputTrack;
+      if (my.settings.textTrack) {
+        // console.log('1')
+        inputTrack = my.settings.textTrack;
+      } else {
+        // console.log('2')
+        inputTrack = my.player.addTextTrack("captions", "Manual");
+      }
+
+      my.track = inputTrack;
+      my.track.mode = "showing"
+      // console.log(my.settings.track)
+      // console.log(my.track)
+
 
   var updateCueTimeline = function() {
-      // console.log('test')
+
+      let prevTime = editor.player.currentTime;
+    
       editor.clear();
       editor.fromJSON( {
         "config": {},
@@ -706,18 +745,35 @@ var transcript = function (options) {
         ],
         "animations": Array.from(my.track.cues).map(cue => [cue.text, cue.startTime, cue.endTime, 0, 0, true])
       });
+
+      editor.setTime(prevTime)
   }
   my.editor = editor;
   my.updateCueTimeline = updateCueTimeline;
   editor.updateCueTimeline = updateCueTimeline;
-  my.player = this;
-  my.settings = videojs.mergeOptions(defaults, options);
+  // my.player = this;
+  // my.settings = videojs.mergeOptions(defaults, options);
   my.widget = widget.create(options);
 
-  document.querySelector('.vjs-progress-control').addEventListener('click', (event) => {
+  // document.querySelector('.vjs-progress-control').addEventListener('click', (event) => {
+  //   // console.log(my.player.currentTime())
+  //   my.editor.setTime(my.player.currentTime())
+  // })
+
+  var findAll = function(node) {
+    // console.log(node)
+    node.addEventListener('click', (event) => {
     // console.log(my.player.currentTime())
-    my.editor.setTime(my.player.currentTime())
-  })
+      my.editor.setTime(my.player.currentTime())
+    })
+    Array.from(node.children).forEach((child) => {
+      findAll(child)
+      // console.log(child)
+    })
+  }
+
+  findAll(document.querySelector('.vjs-progress-control'));
+
 
   var timeUpdate = function () {
     // console.log(my.player.currentTime())
@@ -749,11 +805,11 @@ var transcript = function (options) {
 
 
   return {
-    editor: function () {
-      return my.widget.el();
-    },
+    // editor: function () {
+    //   return my.widget.el();
+    // },
     // timeliner: timelinerContainer,
-    my: my,
+    // my: my,
     track: my.currentTrack
   };
 };
